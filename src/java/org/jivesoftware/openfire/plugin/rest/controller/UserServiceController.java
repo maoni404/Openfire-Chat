@@ -1,12 +1,6 @@
 package org.jivesoftware.openfire.plugin.rest.controller;
 
-import java.util.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import javax.ws.rs.core.Response;
-
+import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.openfire.SessionManager;
 import org.jivesoftware.openfire.SharedGroupException;
 import org.jivesoftware.openfire.XMPPServer;
@@ -15,13 +9,7 @@ import org.jivesoftware.openfire.group.GroupManager;
 import org.jivesoftware.openfire.group.GroupNotFoundException;
 import org.jivesoftware.openfire.lockout.LockOutManager;
 import org.jivesoftware.openfire.plugin.rest.dao.PropertyDAO;
-import org.jivesoftware.openfire.plugin.rest.entity.GroupEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.RosterEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.RosterItemEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.UserEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.UserEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.UserGroupsEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.UserProperty;
+import org.jivesoftware.openfire.plugin.rest.entity.*;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
 import org.jivesoftware.openfire.plugin.rest.utils.UserUtils;
@@ -33,9 +21,14 @@ import org.jivesoftware.openfire.user.User;
 import org.jivesoftware.openfire.user.UserAlreadyExistsException;
 import org.jivesoftware.openfire.user.UserManager;
 import org.jivesoftware.openfire.user.UserNotFoundException;
-import org.jivesoftware.database.DbConnectionManager;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.StreamError;
+
+import javax.ws.rs.core.Response;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
 
 /**
  * The Class UserServiceController.

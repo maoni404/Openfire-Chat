@@ -1,68 +1,50 @@
 package org.jivesoftware.openfire.plugin.rest.service;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import javax.annotation.PostConstruct;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
-
-import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
-import org.jivesoftware.openfire.plugin.rest.entity.AssistEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.WorkgroupEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.AskQueue;
-import org.jivesoftware.openfire.plugin.rest.*;
-import org.jivesoftware.openfire.auth.AuthFactory;
-import org.jivesoftware.openfire.*;
-
-import org.jivesoftware.util.*;
-import org.jivesoftware.util.cache.Cache;
-import org.jivesoftware.util.cache.CacheFactory;
-import org.jivesoftware.openfire.user.*;
-import org.jivesoftware.database.DbConnectionManager;
-
-import org.jivesoftware.smack.OpenfireConnection;
-import org.broadbear.link.preview.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.xmpp.packet.*;
-import org.dom4j.Element;
-
-import net.sf.json.*;
-import com.j256.twofactorauth.TimeBasedOneTimePasswordUtil;
-
-import org.apache.commons.httpclient.Credentials;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.broadbear.link.preview.SourceContent;
+import org.broadbear.link.preview.TextCrawler;
+import org.dom4j.Element;
+import org.jivesoftware.database.DbConnectionManager;
+import org.jivesoftware.openfire.MessageRouter;
+import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.auth.AuthFactory;
+import org.jivesoftware.openfire.plugin.rest.RESTServicePlugin;
+import org.jivesoftware.openfire.plugin.rest.entity.AskQueue;
+import org.jivesoftware.openfire.plugin.rest.entity.AssistEntity;
+import org.jivesoftware.openfire.plugin.rest.entity.WorkgroupEntity;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
+import org.jivesoftware.openfire.user.User;
+import org.jivesoftware.openfire.user.UserManager;
+import org.jivesoftware.openfire.user.UserNotFoundException;
+import org.jivesoftware.smack.OpenfireConnection;
+import org.jivesoftware.util.JiveGlobals;
+import org.jivesoftware.util.StringUtils;
+import org.jivesoftware.util.cache.Cache;
+import org.jivesoftware.util.cache.CacheFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xmpp.packet.Message;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 
 @Path("restapi/v1/ask")

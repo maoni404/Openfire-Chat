@@ -16,33 +16,23 @@
 
 package org.jivesoftware.openfire.plugin.rest;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.servlet.ServletRequest;
-import javax.security.auth.Subject;
-
+import org.eclipse.jetty.security.DefaultIdentityService;
+import org.eclipse.jetty.security.IdentityService;
+import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
-import org.eclipse.jetty.util.security.Credential;
-import org.eclipse.jetty.security.*;
-
-import org.jivesoftware.openfire.auth.UnauthorizedException;
-import org.jivesoftware.openfire.auth.AuthToken;
+import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.auth.AuthFactory;
-import org.jivesoftware.openfire.admin.AdminManager;
-import org.jivesoftware.openfire.user.User;
-import org.jivesoftware.openfire.user.UserAlreadyExistsException;
+import org.jivesoftware.openfire.auth.UnauthorizedException;
 import org.jivesoftware.openfire.user.UserManager;
 import org.jivesoftware.openfire.user.UserNotFoundException;
-import org.jivesoftware.openfire.XMPPServer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.Subject;
+import javax.servlet.ServletRequest;
+import java.io.Serializable;
+import java.security.Principal;
 
 /**
  * A login service that uses Jetty to authenticate Openfire users

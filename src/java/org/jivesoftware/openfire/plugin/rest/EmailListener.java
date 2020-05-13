@@ -20,69 +20,63 @@
 
 package org.jivesoftware.openfire.plugin.rest;
 
+import com.overzealous.remark.Remark;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.util.BASE64DecoderStream;
-
-import org.jivesoftware.openfire.XMPPServer;
-import org.jivesoftware.util.*;
-import org.jivesoftware.openfire.user.*;
-
-import org.jivesoftware.openfire.SessionManager;
-import org.jivesoftware.openfire.session.ClientSession;
-import org.jivesoftware.openfire.muc.*;
-import org.jivesoftware.openfire.muc.spi.*;
-import org.jivesoftware.openfire.forms.spi.*;
-import org.jivesoftware.openfire.forms.*;
-import org.jivesoftware.openfire.plugin.spark.*;
 import org.jivesoftware.database.DbConnectionManager;
+import org.jivesoftware.openfire.SessionManager;
+import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.forms.DataForm;
+import org.jivesoftware.openfire.forms.FormField;
+import org.jivesoftware.openfire.forms.spi.XDataFormImpl;
+import org.jivesoftware.openfire.forms.spi.XFormFieldImpl;
+import org.jivesoftware.openfire.muc.MUCRoom;
+import org.jivesoftware.openfire.muc.NotAllowedException;
+import org.jivesoftware.openfire.plugin.spark.Bookmark;
 import org.jivesoftware.openfire.security.SecurityAuditManager;
-
-import org.json.JSONArray;
+import org.jivesoftware.openfire.session.ClientSession;
+import org.jivesoftware.openfire.user.User;
+import org.jivesoftware.openfire.user.UserManager;
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.AndFilter;
+import org.jivesoftware.smack.filter.FromMatchesFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaTypeFilter;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+import org.jivesoftware.smackx.workgroup.WorkgroupInvitation;
+import org.jivesoftware.smackx.workgroup.WorkgroupInvitationListener;
+import org.jivesoftware.smackx.workgroup.user.Workgroup;
+import org.jivesoftware.util.EmailService;
+import org.jivesoftware.util.JiveGlobals;
+import org.jivesoftware.util.StringUtils;
 import org.json.JSONObject;
-
-import org.xmpp.packet.JID;
-import org.xmpp.packet.IQ;
-
-import org.dom4j.*;
-
-import javax.mail.Message;
-import javax.mail.Session;
-import javax.mail.*;
-import javax.mail.internet.*;
-import javax.mail.event.MessageCountAdapter;
-import javax.mail.event.MessageCountEvent;
-import java.security.Security;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.net.*;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-
-import java.nio.charset.StandardCharsets;
-
+import org.jxmpp.jid.impl.JidCreate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.helper.SimpleMessageListener;
+import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
+import org.subethamail.smtp.server.SMTPServer;
+import org.xmpp.packet.IQ;
+import org.xmpp.packet.JID;
 
-import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.filter.*;
-import org.jivesoftware.smack.packet.*;
-import org.jivesoftware.smack.tcp.*;
-import org.jivesoftware.smackx.workgroup.*;
-import org.jivesoftware.smackx.workgroup.user.Workgroup;
-
-import org.jxmpp.jid.*;
-import org.jxmpp.jid.impl.JidCreate;
-import org.jxmpp.jid.parts.Resourcepart;
-import org.jxmpp.stringprep.XmppStringprepException;
-
-import org.subethamail.smtp.*;
-import org.subethamail.smtp.helper.*;
-import org.subethamail.smtp.server.*;
-import org.subethamail.smtp.server.SMTPServer.*;
-
-import com.overzealous.remark.Remark;
+import javax.mail.*;
+import javax.mail.event.MessageCountAdapter;
+import javax.mail.event.MessageCountEvent;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.*;
+import java.net.InetAddress;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 /**

@@ -1,29 +1,17 @@
 package org.jivesoftware.openfire.plugin.rest.service;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
+import org.jivesoftware.openfire.plugin.spark.Bookmark;
+import org.jivesoftware.openfire.plugin.spark.BookmarkManager;
+import org.jivesoftware.openfire.plugin.spark.Bookmarks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.jivesoftware.util.NotFoundException;
-
-import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
-
-import org.jivesoftware.openfire.plugin.spark.Bookmark;
-import org.jivesoftware.openfire.plugin.spark.Bookmarks;
-import org.jivesoftware.openfire.plugin.spark.BookmarkManager;
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("restapi/v1/bookmarks")
 public class BookmarkService {

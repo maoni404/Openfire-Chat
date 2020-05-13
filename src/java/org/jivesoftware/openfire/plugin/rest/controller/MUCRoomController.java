@@ -1,53 +1,32 @@
 package org.jivesoftware.openfire.plugin.rest.controller;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Iterator;
-
-import javax.ws.rs.core.Response;
-
+import org.dom4j.Element;
 import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.cluster.ClusterManager;
 import org.jivesoftware.openfire.container.PluginManager;
 import org.jivesoftware.openfire.group.ConcurrentGroupList;
 import org.jivesoftware.openfire.group.Group;
-import org.jivesoftware.openfire.muc.ConflictException;
-import org.jivesoftware.openfire.muc.ForbiddenException;
-import org.jivesoftware.openfire.muc.MUCRole;
-import org.jivesoftware.openfire.muc.MUCRoom;
-import org.jivesoftware.openfire.muc.NotAllowedException;
+import org.jivesoftware.openfire.muc.*;
 import org.jivesoftware.openfire.muc.cluster.RoomAvailableEvent;
-import org.jivesoftware.openfire.muc.cluster.RoomUpdatedEvent;
 import org.jivesoftware.openfire.muc.cluster.RoomRemovedEvent;
+import org.jivesoftware.openfire.muc.cluster.RoomUpdatedEvent;
 import org.jivesoftware.openfire.muc.spi.LocalMUCRoom;
 import org.jivesoftware.openfire.plugin.rest.RESTServicePlugin;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCChannelType;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.OccupantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.OccupantEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.ParticipantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.ParticipantEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomMessageEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomMessageEntity;
+import org.jivesoftware.openfire.plugin.rest.entity.*;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
 import org.jivesoftware.openfire.plugin.rest.utils.MUCRoomUtils;
 import org.jivesoftware.openfire.plugin.rest.utils.UserUtils;
 import org.jivesoftware.util.AlreadyExistsException;
 import org.jivesoftware.util.cache.CacheFactory;
-import org.xmpp.packet.JID;
-import org.xmpp.packet.Presence;
-
-import org.xmpp.packet.Message;
-import org.jivesoftware.openfire.muc.MultiUserChatService;
-import org.jivesoftware.openfire.muc.MUCRoomHistory;
-import org.dom4j.Element;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xmpp.packet.JID;
+import org.xmpp.packet.Message;
+import org.xmpp.packet.Presence;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 /**
  * The Class MUCRoomController.

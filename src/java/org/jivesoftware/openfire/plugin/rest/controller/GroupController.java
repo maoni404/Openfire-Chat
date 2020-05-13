@@ -1,11 +1,5 @@
 package org.jivesoftware.openfire.plugin.rest.controller;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.ws.rs.core.Response;
-
 import org.jivesoftware.openfire.group.Group;
 import org.jivesoftware.openfire.group.GroupAlreadyExistsException;
 import org.jivesoftware.openfire.group.GroupManager;
@@ -14,6 +8,11 @@ import org.jivesoftware.openfire.plugin.rest.entity.GroupEntity;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
 import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
 import org.jivesoftware.openfire.plugin.rest.utils.MUCRoomUtils;
+
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * The Class GroupController.

@@ -1,55 +1,21 @@
 package org.ifsoft.mta;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.security.cert.X509Certificate;
-import java.security.Principal;
-
-
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.SimpleInstanceManager;
 import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
-import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.plus.annotation.ContainerInitializer;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.ForwardedRequestCustomizer;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.WebAppLoaderFix;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.jivesoftware.openfire.Connection;
-import org.jivesoftware.openfire.XMPPServer;
-import org.jivesoftware.openfire.keystore.CertificateStore;
-import org.jivesoftware.openfire.keystore.IdentityStore;
-import org.jivesoftware.openfire.spi.ConnectionConfiguration;
-import org.jivesoftware.openfire.spi.ConnectionManagerImpl;
-import org.jivesoftware.openfire.spi.ConnectionType;
-import org.jivesoftware.openfire.spi.EncryptionArtifactFactory;
-import org.jivesoftware.openfire.websocket.OpenfireWebSocketServlet;
-import org.jivesoftware.util.CertificateEventListener;
-import org.jivesoftware.util.CertificateManager;
-import org.jivesoftware.util.JiveConstants;
 import org.jivesoftware.util.JiveGlobals;
-import org.jivesoftware.util.PropertyEventDispatcher;
-import org.jivesoftware.util.PropertyEventListener;
-import org.jivesoftware.util.TaskEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public final class MtaManager {

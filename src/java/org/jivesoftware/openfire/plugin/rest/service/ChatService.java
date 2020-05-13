@@ -1,80 +1,46 @@
 package org.jivesoftware.openfire.plugin.rest.service;
 
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import java.net.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.time.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.StreamingOutput;
-
-import java.security.Principal;
-
-import javax.xml.bind.*;
-import org.codehaus.jackson.map.*;
-import org.codehaus.jackson.xc.*;
-
+import com.j256.twofactorauth.TimeBasedOneTimePasswordUtil;
+import de.mxro.process.Spawn;
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import org.ifsoft.sso.Password;
 import org.jivesoftware.openfire.XMPPServer;
-import org.jivesoftware.openfire.user.User;
 import org.jivesoftware.openfire.admin.AdminManager;
-import org.jivesoftware.util.*;
-
-import org.jivesoftware.openfire.plugin.rest.controller.UserServiceController;
-import org.jivesoftware.openfire.plugin.rest.controller.MUCRoomController;
-
-import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
-
-import org.jivesoftware.openfire.plugin.rest.*;
+import org.jivesoftware.openfire.archive.*;
+import org.jivesoftware.openfire.auth.AuthFactory;
 import org.jivesoftware.openfire.plugin.rest.BasicAuth;
-import org.jivesoftware.openfire.plugin.rest.entity.RosterEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.RosterItemEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.UserEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCChannelType;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.OccupantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.ParticipantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.WorkgroupEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.AssistQueues;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomMessageEntities;
-
-import org.jivesoftware.openfire.user.*;
-import org.jivesoftware.openfire.SharedGroupException;
-import org.jivesoftware.openfire.user.UserNotFoundException;
-
-import org.jivesoftware.openfire.auth.*;
-import org.jivesoftware.openfire.sip.sipaccount.*;
-
+import org.jivesoftware.openfire.plugin.rest.RESTServicePlugin;
+import org.jivesoftware.openfire.plugin.rest.controller.MUCRoomController;
+import org.jivesoftware.openfire.plugin.rest.controller.UserServiceController;
+import org.jivesoftware.openfire.plugin.rest.entity.*;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
+import org.jivesoftware.openfire.user.User;
+import org.jivesoftware.smack.OpenfireConnection;
+import org.jivesoftware.util.JiveConstants;
+import org.jivesoftware.util.JiveGlobals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xmpp.packet.JID;
 
-import org.xmpp.packet.*;
-import org.jivesoftware.openfire.archive.*;
-
-import org.jivesoftware.smack.OpenfireConnection;
-import com.j256.twofactorauth.TimeBasedOneTimePasswordUtil;
-import de.mxro.process.*;
-
-import org.ifsoft.sso.Password;
-import org.jitsi.util.OSUtils;
-import org.jivesoftware.openfire.archive.ConversationPDFServlet;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.*;
 
 @Path("restapi/v1/chat")
 public class ChatService {

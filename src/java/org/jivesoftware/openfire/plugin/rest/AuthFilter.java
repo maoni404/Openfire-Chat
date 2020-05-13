@@ -1,11 +1,6 @@
 package org.jivesoftware.openfire.plugin.rest;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response.Status;
-
-import org.jivesoftware.openfire.XMPPServer;
+import org.ifsoft.sso.Password;
 import org.jivesoftware.openfire.admin.AdminManager;
 import org.jivesoftware.openfire.auth.AuthFactory;
 import org.jivesoftware.openfire.auth.ConnectionException;
@@ -14,11 +9,13 @@ import org.jivesoftware.openfire.auth.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
-
-import org.ifsoft.sso.Password;
-import org.jitsi.util.OSUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
 
 /**
  * The Class AuthFilter.
@@ -35,22 +32,17 @@ public class AuthFilter implements ContainerRequestFilter {
     /** The plugin. */
     private RESTServicePlugin plugin = RESTServicePlugin.getInstance();
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.sun.jersey.spi.container.ContainerRequestFilter#filter(com.sun.jersey
-     * .spi.container.ContainerRequest)
-     */
     @Override
-    public ContainerRequest filter(ContainerRequest containerRequest) throws WebApplicationException {
+    public void filter(ContainerRequestContext containerRequest) throws IOException {
         if (!plugin.isEnabled()) {
+            LOG.error("weizisheng error2");
             throw new WebApplicationException(Status.FORBIDDEN);
         }
 
         // Let the preflight request through the authentication
         if ("OPTIONS".equals(containerRequest.getMethod())) {
-            return containerRequest;
+            LOG.error("weizisheng error1");
+            return;
         }
 
         if (!plugin.getAllowedIPs().isEmpty()) {
@@ -73,35 +65,39 @@ public class AuthFilter implements ContainerRequestFilter {
 
         // To be backwards compatible to userservice 1.*
 
-        if ("restapi/v1/userservice".equals(containerRequest.getPath())) {
-            return containerRequest;
+        if ("restapi/v1/userservice".equals(containerRequest.getUriInfo().getPath())) {
+            LOG.error("weizisheng error3");
+            return;
         }
 
         // Get the authentification passed in HTTP headers parameters
-        String auth = containerRequest.getHeaderValue("authorization");
+        String auth = containerRequest.getHeaderString("authorization");
 
         if (auth == null) {
+            LOG.error("weizisheng error4");
             throw new WebApplicationException(Status.UNAUTHORIZED);
         }
 
         // if master secret used, allow everything
 
         if (auth.equals(plugin.getSecret())) {
-            return containerRequest;
+            LOG.error("weizisheng error5");
+            return;
         }
 
         // if permission code is used, allow everything except admin
         // TODO fix solo plugin that will be broken by this change
 
-        if (containerRequest.getPath().startsWith("restapi/v1/admin") == false)
+        if (!containerRequest.getUriInfo().getPath().startsWith("restapi/v1/admin"))
         {
             if (auth.equals(plugin.getPermission())) {
-                return containerRequest;
+                LOG.error("weizisheng error6");
+                return;
             }
         }
 
         // accept user based authentication if allowed
-
+        LOG.error("weizisheng error7");
         if ("basic".equals(plugin.getHttpAuth()))
         {
             String[] usernameAndPassword = BasicAuth.decode(auth);
@@ -111,7 +107,7 @@ public class AuthFilter implements ContainerRequestFilter {
                 throw new WebApplicationException(Status.UNAUTHORIZED);
             }
 
-            if (containerRequest.getPath().startsWith("restapi/v1/admin"))
+            if (containerRequest.getUriInfo().getPath().startsWith("restapi/v1/admin"))
             {
                 boolean userAdmin = AdminManager.getInstance().isUserAdmin(usernameAndPassword[0], true);
 
@@ -130,7 +126,7 @@ public class AuthFilter implements ContainerRequestFilter {
                     LOG.warn("REST SSO authorization fail: " + usernameAndPassword[0] + " " + passkey + " " + usernameAndPassword[1]);
                     throw new WebApplicationException(Status.UNAUTHORIZED);
                 }
-                else return containerRequest;
+                else return;
             }
 
             try {
@@ -148,6 +144,5 @@ public class AuthFilter implements ContainerRequestFilter {
                 throw new WebApplicationException(Status.UNAUTHORIZED);
             }
         }
-        return containerRequest;
     }
 }

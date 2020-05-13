@@ -1,26 +1,13 @@
 package org.jivesoftware.openfire.plugin.rest.service;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import org.jivesoftware.openfire.plugin.rest.controller.MUCRoomController;
+import org.jivesoftware.openfire.plugin.rest.entity.*;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.jivesoftware.openfire.plugin.rest.entity.MUCChannelType;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.OccupantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.ParticipantEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.MUCRoomMessageEntities;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
-import org.jivesoftware.openfire.plugin.rest.controller.MUCRoomController;
 
 @Path("restapi/v1/chatrooms")
 public class MUCRoomService {

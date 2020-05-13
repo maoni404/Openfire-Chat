@@ -16,94 +16,98 @@
 
 package org.jivesoftware.openfire.plugin.rest;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.*;
-import java.net.*;
-import java.util.concurrent.*;
-import java.lang.reflect.*;
-import java.security.Security;
-import java.security.cert.Certificate;
-
-import java.nio.charset.Charset;
-import java.nio.file.attribute.FileTime;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import net.sf.json.JSONObject;
+import org.apache.tomcat.InstanceManager;
+import org.apache.tomcat.SimpleInstanceManager;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
+import org.eclipse.jetty.plus.annotation.ContainerInitializer;
+import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.SpnegoLoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.security.authentication.SpnegoAuthenticator;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.servlet.*;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.ifsoft.meet.MeetController;
+import org.ifsoft.meet.MeetService;
+import org.jitsi.util.OSUtils;
+import org.jivesoftware.openfire.*;
+import org.jivesoftware.openfire.auth.AuthToken;
+import org.jivesoftware.openfire.auth.UnauthorizedException;
+import org.jivesoftware.openfire.container.Plugin;
+import org.jivesoftware.openfire.container.PluginManager;
+import org.jivesoftware.openfire.event.SessionEventDispatcher;
+import org.jivesoftware.openfire.event.SessionEventListener;
+import org.jivesoftware.openfire.group.Group;
+import org.jivesoftware.openfire.group.GroupManager;
+import org.jivesoftware.openfire.group.GroupNotFoundException;
+import org.jivesoftware.openfire.http.HttpBindManager;
+import org.jivesoftware.openfire.interceptor.InterceptorManager;
+import org.jivesoftware.openfire.interceptor.PacketInterceptor;
+import org.jivesoftware.openfire.interceptor.PacketRejectedException;
+import org.jivesoftware.openfire.muc.*;
+import org.jivesoftware.openfire.net.SASLAuthentication;
+import org.jivesoftware.openfire.net.VirtualConnection;
+import org.jivesoftware.openfire.plugin.rest.controller.UserServiceController;
+import org.jivesoftware.openfire.plugin.rest.dao.PropertyDAO;
+import org.jivesoftware.openfire.plugin.rest.entity.SystemProperties;
+import org.jivesoftware.openfire.plugin.rest.entity.SystemProperty;
+import org.jivesoftware.openfire.plugin.rest.entity.UserEntities;
+import org.jivesoftware.openfire.plugin.rest.entity.UserEntity;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
+import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
+import org.jivesoftware.openfire.plugin.rest.sasl.OfChatSaslProvider;
+import org.jivesoftware.openfire.plugin.rest.sasl.OfChatSaslServer;
+import org.jivesoftware.openfire.plugin.rest.service.JerseyWrapper;
+import org.jivesoftware.openfire.plugin.spark.Bookmark;
+import org.jivesoftware.openfire.plugin.spark.BookmarkInterceptor;
+import org.jivesoftware.openfire.plugin.spark.BookmarkManager;
+import org.jivesoftware.openfire.roster.RosterItem;
+import org.jivesoftware.openfire.roster.RosterManager;
+import org.jivesoftware.openfire.session.LocalClientSession;
+import org.jivesoftware.openfire.session.Session;
+import org.jivesoftware.openfire.sip.sipaccount.SipAccount;
+import org.jivesoftware.openfire.user.User;
+import org.jivesoftware.openfire.user.UserManager;
+import org.jivesoftware.openfire.vcard.VCardManager;
+import org.jivesoftware.smack.OpenfireConnection;
+import org.jivesoftware.util.*;
+import org.jivesoftware.util.cache.Cache;
+import org.jivesoftware.util.cache.CacheFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.traderlynk.blast.MessageBlastService;
+import org.xmpp.packet.IQ;
+import org.xmpp.packet.JID;
+import org.xmpp.packet.Message;
+import org.xmpp.packet.Packet;
 
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Response;
-
-import org.jivesoftware.openfire.container.Plugin;
-import org.jivesoftware.openfire.container.PluginManager;
-import org.jivesoftware.openfire.http.HttpBindManager;
-import org.jivesoftware.openfire.auth.AuthFactory;
-import org.jivesoftware.openfire.net.SASLAuthentication;
-import org.jivesoftware.openfire.session.LocalClientSession;
-import org.jivesoftware.openfire.net.VirtualConnection;
-import org.jivesoftware.openfire.auth.UnauthorizedException;
-import org.jivesoftware.openfire.auth.AuthToken;
-import org.jivesoftware.openfire.auth.AuthFactory;
-import org.jivesoftware.openfire.vcard.VCardManager;
-import org.jivesoftware.openfire.user.*;
-import org.jivesoftware.openfire.event.*;
-import org.jivesoftware.openfire.group.*;
-import org.jivesoftware.openfire.roster.*;
-import org.jivesoftware.openfire.muc.*;
-import org.jivesoftware.openfire.session.*;
-import org.jivesoftware.openfire.interceptor.*;
-import org.jivesoftware.openfire.plugin.spark.*;
-import org.jivesoftware.openfire.*;
-
-import org.jivesoftware.openfire.plugin.rest.sasl.*;
-import org.jivesoftware.openfire.plugin.rest.service.JerseyWrapper;
-import org.jivesoftware.openfire.plugin.rest.controller.UserServiceController;
-import org.jivesoftware.openfire.plugin.rest.entity.UserEntities;
-import org.jivesoftware.openfire.plugin.rest.entity.UserEntity;
-import org.jivesoftware.openfire.plugin.rest.entity.SystemProperties;
-import org.jivesoftware.openfire.plugin.rest.entity.SystemProperty;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ExceptionType;
-import org.jivesoftware.openfire.plugin.rest.exceptions.ServiceException;
-import org.jivesoftware.openfire.plugin.rest.dao.PropertyDAO;
-import org.jivesoftware.openfire.plugin.spark.*;
-
-import org.jivesoftware.util.cache.Cache;
-import org.jivesoftware.util.cache.CacheFactory;
-import org.jivesoftware.util.*;
-
-import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
-import org.eclipse.jetty.plus.annotation.ContainerInitializer;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.servlet.*;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.fcgi.server.proxy.*;
-import org.eclipse.jetty.proxy.ProxyServlet;
-
-import org.eclipse.jetty.util.security.*;
-import org.eclipse.jetty.security.*;
-import org.eclipse.jetty.security.authentication.*;
-
-import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.SimpleInstanceManager;
-import org.jivesoftware.openfire.plugin.spark.BookmarkInterceptor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.jivesoftware.smack.OpenfireConnection;
-import org.ifsoft.meet.*;
-import org.xmpp.packet.*;
-import org.dom4j.Element;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import net.sf.json.*;
-import org.jitsi.util.OSUtils;
-
-import org.traderlynk.blast.MessageBlastService;
-import org.jivesoftware.openfire.sip.sipaccount.SipAccount;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * The Class RESTServicePlugin.
@@ -235,6 +239,7 @@ public class RESTServicePlugin implements Plugin, SessionEventListener, Property
         // start REST service on http-bind port
         context = new ServletContextHandler(null, "/rest", ServletContextHandler.SESSIONS);
         context.setClassLoader(this.getClass().getClassLoader());
+        Log.error("weizisheng addServlet...");
         context.addServlet(new ServletHolder(new JerseyWrapper()), "/api/*");
 
         // Ensure the JSP engine is initialized correctly (in order to be
