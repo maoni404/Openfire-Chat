@@ -85,7 +85,7 @@ public class JerseyWrapper extends ServletContainer {
             LOG.error("weizisheng ResourceConfig init error！");
         }
         prc.packages(SCAN_PACKAGE_DEFAULT);
-//        prc.setProperties(config);
+        prc.setProperties(config);
         //prc.setPropertiesAndFeatures(config);
         prc.property(CONTAINER_RESPONSE_FILTERS, CORSFILTER);
         //prc.getProperties().put(CONTAINER_RESPONSE_FILTERS, CORSFILTER);
